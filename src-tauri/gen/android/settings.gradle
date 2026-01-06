@@ -1,4 +1,2 @@
 include ':app'
 include ':buildSrc'
-
-apply from: 'buildSrc/src/main/java/com/bdc/tauri/tauri.settings.gradle'
