@@ -16,8 +16,6 @@ allprojects {
     }
 }
 
-apply from: "buildSrc/src/main/java/com/bdc/tauri/tauri.settings.gradle"
-
 tasks.register("clean").configure {
     delete("build")
 }
