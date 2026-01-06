@@ -1,10 +1,7 @@
-name: 'Build Android with Tauri Action'
+name: 'Build Android APK with buildozer'
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -14,42 +11,26 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04
+      volumes:
+        - /github/workspace:/github/workspace
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+      - name: Setup buildozer
+        run: |
+          docker pull kiyora/buildozer:22.04
+          echo "buildozer image ready"
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android
-
-      - name: Install Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
-      - name: Install frontend dependencies
-        run: npm install
-
-      - name: Build frontend
-        run: npm run build
-
-      - name: Initialize and Build Android
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          target: aarch64-linux-android
+      - name: Build Android APK
+        run: |
+          docker run --rm -v /github/workspace:/buildozer/workspace -w /github/workspace/app kiyora/buildozer:22.04 ./gradlew assembleRelease
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: |
-            src-tauri/gen/android/app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/release/*.apk
